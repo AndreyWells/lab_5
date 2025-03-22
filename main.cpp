@@ -206,10 +206,12 @@ DistribKit* CreateOS(OsType type)
 // Функция, позволяющая "залогинить" любые ос из любого контейнера
 void LoginEmAll(Iterator<DistribKit*> *it)
 {
+    // Цикл позволяет обойти все элементы контейнера
+    // Устанавливаем итератор на первый элемент, пока итератор не дошел до конца контейнера, переводим его на след.элемент)
     for(it->FirstEl(); !it->IsDone(); it->NextEl())
-    {
+    {   // Возвращаем текущий элемент контейнера
         DistribKit *currentOS = it->GetCurrentEl();
-
+        // Текущим элементом контейнера вызываем функцию Login
         currentOS->LoginAsRoot();
     }
 }
@@ -227,7 +229,7 @@ int main()
 
     type = static_cast<OsType>(i); // Перевод числа к типу OsType
 
-    // Создание фруктов при помощи фабричного метода
+    // Создание ОС при помощи фабричного метода
     DistribKit *newOS = CreateOS(type);
 
     newOS->ChangePassword();
@@ -242,31 +244,45 @@ int main()
     cin >> N;
 
     StackClass<DistribKit*> OsStack;
+    // Цикл для заполнения стека
     for(size_t i=0;i<N;i++)
-    {
+    {   // Рандомное число от 1 до 3
         int os_num = rand()%3+1;
+        // Перевод числа к типу OsType
         OsType os_type = static_cast<OsType>(os_num);
+        // Создание ОС при помощи фабричного метода
         DistribKit *newOS = CreateOS(os_type);
+        // Добавляем ОС в стек
         OsStack.Push(newOS);
     }
     wcout << L"Размер стека OS: " << OsStack.StackSize() << endl;
 
     Iterator<DistribKit*> *it2 = new IteratorForStack<DistribKit*>(&OsStack);
     LoginEmAll(it2);
+    // Очищаем память
     delete it2;
 
+    cout << endl;
+    cout << endl;
+
      VectorClass<DistribKit*> OsVector;
+     // Цикл для заполнения стека
     for(size_t i=0;i<N;i++)
-    {
+    { // Рандомное число от 1 до 3
         int os_num = rand()%3+1;
+        // Перевод числа к типу OsType
         OsType os_type = static_cast<OsType>(os_num);
+        // Создание ОС при помощи фабричного метода
         DistribKit *newOS = CreateOS(os_type);
+        // Добавляем ОС в вектор
         OsVector.PushBack(newOS);
     }
-    wcout << L"Размер стека OS: " << OsVector.VectorSize() << endl;
+    wcout << L"Размер вектора OS: " << OsVector.VectorSize() << endl;
 
     Iterator<DistribKit*> *it3 = new IteratorForVector<DistribKit*>(&OsVector);
+
     LoginEmAll(it3);
+
     delete it3;
 
    /*  // Пример полиморфизма

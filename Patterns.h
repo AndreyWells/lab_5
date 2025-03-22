@@ -79,7 +79,7 @@ class VectorClass
 {
 T* data; // Массив, который хранит элементы вектора
 
-size_t capacity; // Вместимость вектора
+size_t capacity; // Вместимость вектора(макс. кол-во элементов, которое может хранить вектор без перераспред. памяти)
 
 size_t VecSize; // Текущий размер вектора
 
@@ -90,29 +90,6 @@ public:
     // Деструктор
     ~VectorClass() {delete[] data;}
 
-    // Конструктор копирования
-    VectorClass(const VectorClass& other): capacity(other.capacity), VecSize(other.VecSize)
-    {
-        data = new T[capacity];
-        for (size_t i = 0; i<VecSize;++i)
-            {
-                data[i] = other.data[i];
-            }
-    }
-
-    // Оператор присваивания
-    VectorClass& operator=(const VectorClass& other)
-    {
-        delete[] data;
-        capacity = other.capacity;
-        VecSize = other.VecSize;
-        data = new T[capacity];
-        for (size_t i = 0; i<VecSize;++i)
-            {
-                data[i] = other.data[i];
-            }
-        return *this; // Возвращается ссылка на текущий объект
-    }
     // Проверка вектора на пустоту
     bool IsEmpty() const {return (VecSize == 0);}
 
@@ -131,12 +108,17 @@ public:
         // Изменение вместимости вектора
     void Reserve(size_t newCapacity) {
         if (newCapacity > capacity) {
+            // Выделяет память для нового массива с новой вместимостью
             T* newData = new T[newCapacity];
-            for (size_t i = 0; i < VecSize; ++i) {
+            // Копирует элементы из старого массива в новый
+            for (size_t i = 0; i < VecSize; ++i)
+            {
                 newData[i] = data[i];
             }
             delete[] data;
+            // Обновление указателя нового массива
             data = newData;
+            // Обновление значения вместимости
             capacity = newCapacity;
         }
     }
@@ -145,7 +127,16 @@ public:
     void PushBack(const T& value) {
         if (VecSize >= capacity) {
             // Увеличиваем вместимость, если необходимо
-            size_t newCapacity = (capacity == 0) ? 1 : capacity * 2;
+            size_t newCapacity = 0;
+            // Если вектор пуст, то меняем значение на 1
+            if (capacity == 0)
+            {
+                newCapacity = 1;
+            }
+            else // Если не пуст, то удваиваем текущее значение
+            {
+                newCapacity = capacity*2;
+            }
             Reserve(newCapacity);
         }
         data[VecSize++] = value;
