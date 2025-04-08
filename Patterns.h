@@ -1,169 +1,222 @@
 #ifndef PATTERNS_H_INCLUDED
 #define PATTERNS_H_INCLUDED
-const size_t MaxSize = 200; // Определяем максимальный размер стека, делаем его беззнаковым
-
-// Шаблонный класс "Стек"
-
-template <typename T> // Класс будет работать с любым типом данных, в кач-ве параметра Т(int,doyble,string...)
-class StackClass
-{
-T Mass[MaxSize]; // Массив, который хранит элементы стека
-
-size_t ElBefEnd; // Cоздаем переменную, которая хранит индекс элемента, следующего за верхним элементом стека
-
-public:
-    // Конструктор, инициализируем переменную нулем
-    StackClass(): ElBefEnd(0) {}
-
-    // Проверка стека на пустоту
-    bool IsEmpty() const {return (ElBefEnd == 0);}
-
-    // Определение размера стека
-    size_t StackSize() const {return ElBefEnd;}
-
-    // Поместить в стек новый элемент
-    void Push(T newObj) {Mass[ElBefEnd++] = newObj;} // Элемент помещается в массив на позицию ElBefEnd,присваивает значение, после чего ElBefEnd увеличивается на 1
-
-    // Извлекает последний элемент из массива
-    T Pop() {return Mass[--ElBefEnd];}
-
-    // Возвращает элемент стека по указанному индексу
-    T GetElByInd(size_t index) const {return Mass[index];}
-};
-// Абстрактный класс для итератора
-template<typename T> // Класс будет работать с любым типом данных, в кач-ве параметра Т(int,doyble,string...)
+const size_t MaxSize = 200;
+// Абстрактный класс итератора
+template<typename T>
 
 class Iterator
 {
+public:
+    virtual ~Iterator() {}
+    virtual void FirstEl() = 0;
+    virtual void NextEl() = 0;
+    virtual bool IsDone() const = 0;
+    virtual T GetCurrentElement() const = 0;
+
 protected:
+    Iterator() {}
+};
+// Абстрактный класс контейнера
+template<typename T>
 
-    Iterator() {} // Объявили конструктор
-
+class Container
+{
 public:
+    virtual ~Container() {}
+    virtual bool IsEmpty() const = 0;
+    virtual size_t GetSize() const =0;
+    virtual Iterator<T> *GetIterator() = 0;
+    virtual T GetElementByIndex(size_t index) const = 0;
+    virtual T Pop() = 0;
+    virtual void Push(T newObj) = 0;
+};
+// Итератор для стэка
+template<typename T>
 
-    virtual ~Iterator() {} // Объявили деструктор
+class StackIterator : public Iterator<T>
+{
+public:
+    StackIterator(const T* con, size_t size): Pos(0), Size(size), StackCon(con) {}
 
-    virtual void FirstEl() = 0; // Спозиционироваться на первый элемент контейнера
+    void FirstEl() override { Pos=0;}
 
-    virtual void NextEl() = 0;  // Перейти к следующему элементу контейнера
+    void NextEl() override { ++Pos;}
 
-    virtual bool IsDone() const = 0;  // Проверить, достигнут ли конец
+    bool IsDone() const override {return (Pos>=Size);}
 
-    virtual T GetCurrentEl() const = 0; // Получить текущий элемент контейнера
+    T GetCurrentElement() const override {return StackCon[Pos];}
+
+private:
+    size_t Pos;
+    size_t Size;
+    const T* StackCon;
+};
+// Шаблонный класс Стэк
+template<typename T>
+
+class StackClass : public Container<T>
+{
+public:
+    StackClass(): EndElem(0) {}
+
+    bool IsEmpty() const override {return (EndElem==0);}
+
+    size_t GetSize() const override {return EndElem;}
+
+    T GetElementByIndex(size_t index) const override{return Mass[index];}
+
+    T Pop() override {return Mass[--EndElem];}
+
+    void Push(T newObj) override {Mass[EndElem++]=newObj;}
+
+    Iterator<T> *GetIterator() override {return new StackIterator<T>(Mass,EndElem);}
+private:
+    T Mass[MaxSize];
+    size_t EndElem;
 };
 
-// Итератор для обхода стека
-template<typename T> // Класс будет работать с любым типом данных, в кач-ве параметра Т(int,doyble,string...)
+// Итератор для вектора
 
-class IteratorForStack: public Iterator<T> // Наследование от абстрактного класса
+template <typename T>
+class VectorIterator : public Iterator<T>
 {
-    const StackClass<T> *StackCon; // Указатель на контейнер, по которому будет итерироваться итератор; итератор не изменяет контейнер
-    size_t Pos; // Текущая позиция итератора
 public:
-    // Конструктор инициализирующий позицию и контейнер
-     IteratorForStack(StackClass<T> *container): StackCon(container), Pos(0) {}
+    VectorIterator(T* con, size_t size):Pos(0),Size(size), VecCon(con) {}
 
-    void FirstEl() override { Pos = 0; } //Cпозиционироваться на первый элемент контейнера
+    void FirstEl() override {Pos=0;}
 
-    void NextEl() override { Pos++; }// Перейти к следующему элементу контейнера
+    void NextEl() override {Pos++;}
 
-    bool IsDone() const override { return (Pos >= StackCon->StackSize()); }// Проверить, достигнут ли конец
+    bool IsDone() const override {return (Pos>=Size);}
 
-    T GetCurrentEl() const override { return StackCon->GetElByInd(Pos); }// Получить текущий элемент контейнера
+    T GetCurrentElement() const {return VecCon[Pos];}
+
+private:
+    size_t Pos;
+    size_t Size;
+    T* VecCon;
 };
 
-// Шаблонный класс "vector"
+// Шаблонный класс Вектор
 
-template <typename T> // Класс будет работать с любым типом данных, в кач-ве параметра Т(int,doyble,string...)
-class VectorClass
+template<typename T>
+
+class VectorClass : public Container<T>
 {
-T* data; // Массив, который хранит элементы вектора
-
-size_t capacity; // Вместимость вектора(макс. кол-во элементов, которое может хранить вектор без перераспред. памяти)
-
-size_t VecSize; // Текущий размер вектора
-
 public:
-    // Конструктор, инициализируем переменные нулем
-    VectorClass(): data(0),capacity(0),VecSize(0) {}
+       VectorClass(): Data(0),Capacity(0),EndElem(0) {}
 
-    // Деструктор
-    ~VectorClass() {delete[] data;}
+       ~VectorClass()
+       {
+           delete[] Data;
+       }
+    // Превращаем щаблонныцй класс Вектор в полноценный STL контейнер
+    // Добавляем определение типа итераторов
+        typedef const T* const_iter;
+    // Добавляем определение методов для работы с конст. итератором
+        const_iter begin() const {return Data;}
 
-    // Проверка вектора на пустоту
-    bool IsEmpty() const {return (VecSize == 0);}
+        const_iter end() const {return Data+EndElem;}
 
-    // Определение размера вектора
-    size_t VectorSize() const {return VecSize;}
+       bool IsEmpty() const override {return (EndElem==0);}
 
-    // Определение вместимости вектора
-    size_t VectorCapacity() const {return capacity;}
+       size_t GetSize() const override {return EndElem;}
 
-    // Удаление последнего элемента
-    T PopBack() {return --VecSize;}
+       T GetElementByIndex(size_t index) const override {return Data[index];}
 
-    // Доступ к элементу по индексу
-    T operator[](size_t index) const {return data[index];}
+       T Pop() override {return Data[--EndElem];}
 
-        // Изменение вместимости вектора
+       size_t GetCapacity() const {return Capacity;}
+           // Изменение вместимости вектора
     void Reserve(size_t newCapacity) {
-        if (newCapacity > capacity) {
+        if (newCapacity > Capacity) {
             // Выделяет память для нового массива с новой вместимостью
             T* newData = new T[newCapacity];
             // Копирует элементы из старого массива в новый
-            for (size_t i = 0; i < VecSize; ++i)
+            for (size_t i = 0; i < EndElem; ++i)
             {
-                newData[i] = data[i];
+                newData[i] = Data[i];
             }
-            delete[] data;
+            delete[] Data;
             // Обновление указателя нового массива
-            data = newData;
+            Data = newData;
             // Обновление значения вместимости
-            capacity = newCapacity;
+            Capacity = newCapacity;
         }
     }
 
    // Добавление элемента в конец вектора
-    void PushBack(const T& value) {
-        if (VecSize >= capacity) {
+    void Push(T newObj) override{
+        if (EndElem >= Capacity) {
             // Увеличиваем вместимость, если необходимо
             size_t newCapacity = 0;
             // Если вектор пуст, то меняем значение на 1
-            if (capacity == 0)
+            if (Capacity == 0)
             {
                 newCapacity = 1;
             }
             else // Если не пуст, то удваиваем текущее значение
             {
-                newCapacity = capacity*2;
+                newCapacity = Capacity*2;
             }
             Reserve(newCapacity);
         }
-        data[VecSize++] = value;
+        Data[EndElem++] = newObj;
     }
+    Iterator<T>* GetIterator() override {return new VectorIterator<T>(Data,EndElem);}
 
-    // Очистка вектора
-    void Clear() {VecSize=0;}
+private:
+    T* Data;
+    size_t Capacity;
+    size_t EndElem;
 };
 
-// Итератор для вектора
-template<typename T> // Класс будет работать с любым типом данных, в кач-ве параметра Т(int,doyble,string...)
+// Декоратор для итератора
+template<typename T>
 
-class IteratorForVector: public Iterator<T> // Наследование от абстрактного класса
+class IteratorDecorator : public Iterator<T>
 {
-    const VectorClass<T> *VecCon; // Указатель на контейнер, по которому будет итерироваться итератор; итератор не изменяет контейнер
-    size_t CurrPos; // Текущая позиция итератора
 public:
-    // Конструктор инициализирующий позицию и контейнер
-     IteratorForVector(VectorClass<T> *vec): VecCon(vec), CurrPos(0) {}
+    IteratorDecorator(Iterator<T>*it) : It(it) {}
 
-    void FirstEl() override { CurrPos = 0; } //Cпозиционироваться на первый элемент контейнера
+    virtual ~IteratorDecorator() {delete It;}
 
-    void NextEl() override { CurrPos++; }// Перейти к следующему элементу контейнера
+    virtual void FirstEl()  {It->FirstEl();}
 
-    bool IsDone() const override { return (CurrPos >= VecCon->VectorSize()); }// Проверить, достигнут ли конец
+    virtual void NextEl()  {It->NextEl();}
 
-    T GetCurrentEl() const override { return (*VecCon)[CurrPos]; }// Получить текущий элемент контейнера
+    virtual bool IsDone() const  {return It->IsDone();}
+
+    virtual T GetCurrentElement() const  {return It->GetCurrentElement();}
+
+protected:
+    Iterator<T> *It;
+};
+
+// Адаптер для контейнерных классов
+template<typename ConType, typename DataType> // Принимает тип контейнера и тип данных элементов
+
+class ConstIterAdapter: public Iterator<DataType>
+{
+public:
+    ConstIterAdapter(ConType* con): Container(con)
+    {
+        It = Container->begin();
+    }
+    virtual ~ConstIterAdapter() {}
+
+    virtual void FirstEl() {It = Container->begin();}
+
+    virtual void NextEl() {It++;}
+
+    virtual bool IsDone() const {return (It == Container->end());}
+
+    virtual DataType GetCurrentElement() const {return *It;} // Разыменовываем итератор
+
+protected:
+
+    ConType *Container; // Указатель на контейнер по кот. проходит итератор
+    typename ConType::const_iter It; // Константный итератор этого контейнера
 };
 
 

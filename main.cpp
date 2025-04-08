@@ -1,325 +1,325 @@
 #include <iostream>
 #include "Patterns.h"
+#include <cstdlib>
+#include <ctime>
 
-//Создать фабричный метод для создания объектов вашего семейства.
-//Создать два контейнера с различным устройством для хранения объектов вашего семейства. Внутри контейнеров могут быть: статический или динамический массив, вектор (vector) или список (list). В последнем случае произвольный доступ к элементам невозможен, обход реализуется при помощи итератора begin() - end(). Контейнеры должны иметь различный интерфейс.
-//Создать итераторы для обхода созданных вами контейнеров.
-//Наполнить контейнеры случайными объектами.
-//Продемонстрировать взаимозаменяемость контейнеров с точки зрения их последовательного обхода при помощи итераторов (над каждым объектом надо выполнить одно и то же действие).
+
+//Реализовать создание итератора во всех разработанных ранее контейнерах при помощи функции GetIterator, предварительно объединив все контейнеры общим интерфейсом
+//(т. е. унаследовать их от одного общего класса с виртуальной функцией GetIterator).
+//Реализовать минимум 3 декоратора для итераторов, продемонстрировать их работоспособность.
+//Реализовать адаптер для итератора в стиле STL, продемонстрировать его работоспособность.
 using namespace std;
-class DistribKit {
-    // Семейство LINUX
-    string Family;
+class DistribKit
+{
+    public:
+        // Инкапсуляция enum class в абстрактный класс, для того, чтобы он работал только в унаследованных классах
+        enum class Username : int
+        {
+            Root,
+            DebianUser,
+            KaliUser,
+            CentosUser
+        };
 
-    // Год выпуска
-    int Year;
+        enum class OsType : int
+        {
+            Undefined=0,
+            Debian=1,
+            Kali=2,
+            Centos=3
+        };
 
-    // Область применения
-    string Appoinment;
+         // Конструктом с параметром
+        DistribKit(Username user):StatusIsActive(static_cast<bool>(rand()%2)), StableVer(0.0), User(user) {}
 
-    // Стабильная версия
-    double StableVer;
+        // Деструктор
+        virtual ~DistribKit() {}
 
-protected:
-    bool StatusIsActive;
-public:
-    DistribKit(string family, int year, string appoinment, double stablever): Family(family),Year(year), Appoinment(appoinment), StableVer(stablever), StatusIsActive(false)
-    {
-        cout << "Starting VBox..." <<endl;
-    }
-    virtual ~DistribKit()
-    {
-    cout << "Reboot system..." << endl;
-    }
-// Геттеры для атрибутов
-    string GetFamily() const {return Family;}
+        // Геттеры
+        virtual double GetStableVer() {return StableVer;}
 
-    int GetYear() const {return Year;}
+        Username GetUser() {return User;}
 
-    string GetAppoinment() const {return Appoinment;}
+        bool GetStatus() {return StatusIsActive;}
 
-    double GetStableVer() const {return StableVer;}
+        virtual void Connect()
+        {
+            if (GetStatus())
+            {
+            cout << "Connecting to ACTIVE os" << endl;
+            }
+            else
+            {
+            cout <<"Connecting to UNACTIVE os" << endl;
+            }
+        }
+        protected:
+            bool StatusIsActive;
 
-    virtual void LoginAsRoot() = 0;
+        private:
+            double StableVer;
+            Username User;
 
-    virtual void OpeningBash() = 0;
 
-    virtual void ChangePassword() = 0;
 };
-
-class Centos : public DistribKit
-{
-public:
-    Centos(string family, int year, string appoinment, double stablever): DistribKit(family, year, appoinment, stablever)
-    {
-    StatusIsActive = false;
-    cout << "Logging in Centos..." << endl;
-    }
-    ~Centos()
-    {
-         cout << "Exit Centos..." << endl;
-    }
-    void LoginAsRoot() override
-    {
-    cout << "Write in tty3 \"su\"" << endl;
-    cout << "Password: ???" << endl;
-    cout << "Write in tty3 \"centos\"" << endl;
-    cout << "You're logging as root!!" << endl;
-    }
-    void OpeningBash()
-    {
-     cout << "Ctrl + Alt + F3.." << endl;
-     cout << "You are in tty3 " << endl;
-    };
-    void ChangePassword()
-    {
-    cout << "Push \"e\"" << endl;
-    cout << "Find \"linuxefi\" string" << endl;
-    cout << "Change argument \"ro\" to \"rw\"" << endl;
-    cout << "Delete argument \"rhgb\""  << endl;
-    cout << "Add \"rd.break enforcing=0\" at the end of the string"  << endl;
-    cout << "Push \"Ctrl + x\""  << endl;
-    cout << "Write \"chroot\" in tty3"  << endl;
-    cout << "Write \"passwd root\" in tty3"  << endl;
-    cout << "Type your new password"  << endl;
-    cout << "Your password successfully changed!!"  << endl;
-    };
-};
-
-/*void Centos::LoginAsRoot()
-{
-    cout << "Write in bash \"su\"" << endl;
-    cout << "Password: ???" << endl;
-    cout << "Write in bash \"centos\"" << endl;
-    cout << "You're logging as root" << endl;
-}
-
-void Centos::OpeningBash()
-{
-    cout << "Push F2..." << endl;
-}
-
-void Centos::CheckShadow()
-{
-    cout << "Write  sudo cat /etc/shadow..." << endl;
-}
-*/
 class Debian : public DistribKit
 {
 public:
-    Debian(string family, int year, string appoinment, double stablever): DistribKit(family, year, appoinment, stablever)
+    Debian() : DistribKit(Username::DebianUser) {}
+
+    ~Debian() {}
+
+     void Connect() override
     {
-    StatusIsActive = true;
-    cout << "Logging in Debian..." << endl;
+        DistribKit::Connect();
+
+        cout << "Connecting to Debian..." << endl;
     }
-    ~Debian()
-    {
-         cout << "Exit Debian..." << endl;
-    }
-    void LoginAsRoot()
-    {
-    cout << "Write in bash \"su\"" << endl;
-    cout << "Password: ???" << endl;
-    cout << "Write in bash \"debian\"" << endl;
-    cout << "You're logging as root!!" << endl;
-    };
-    void OpeningBash()
-    {
-     cout << "Push F2..." << endl;
-    };
-     void ChangePassword()
-    {
-    cout << "Push \"e\"" << endl;
-    cout << "Find \"Linux\" string" << endl;
-    cout << "Add \"init=/bin/bash\" at the end of the string" << endl;
-    cout << "Push \"Ctrl + x\""  << endl;
-    cout << "Write \"mount -o remount /\""  << endl;
-    cout << "Write \"passwd\""  << endl;
-    cout << "Type your new password"  << endl;
-    cout << "Your password successfully changed!!"  << endl;
-    };
+    double GetStableVer() override {return StableVer;}
+
+private:
+
+    double StableVer = 12.4;
 };
 
 class Kali : public DistribKit
 {
 public:
-    Kali(string family, int year, string appoinment, double stablever): DistribKit(family, year, appoinment, stablever)
-    {
-    StatusIsActive = true;
-    cout << "Logging in Kali..." << endl;
-    }
-    ~Kali()
-    {
-         cout << "Exit Kali..." << endl;
-    }
-    void LoginAsRoot()
-    {
-    cout << "Write in bash \"su\"" << endl;
-    cout << "Password: ???" << endl;
-    cout << "Write in bash \"kali\"" << endl;
-    cout << "You're logging as root!!" << endl;
-    };
-    void OpeningBash()
-    {
-     cout << "Alt + F1..." << endl;
-    };
-     void ChangePassword()
-    {
-    cout << "Choose \"Advanced options for KALI GNU/Linux\" in the boot menu" << endl;
-    cout << "Find \"Recovery mode\" point" << endl;
-    cout << "Find \"linuxefi\" string" << endl;
-    cout << "Change argument \"ro\" to \"rw\"" << endl;
-    cout << "Add \"init=/bin/bash\" at the end of the string" << endl;
-    cout << "Push \"F10\""  << endl;
-    cout << "Write \"passwd\""  << endl;
-    cout << "Type your new password"  << endl;
-    cout << "Your password successfully changed!!"  << endl;
-    };
-};
-// Реализация фабричного метода
-enum class OsType: int // Перечисление с областью видимости, базового типа int
-{
-    Centos = 1,
-    Debian = 2,
-    Kali = 3,
 
-    Undefined = 0 // Значение по умолчанию
+    Kali() : DistribKit(Username::KaliUser) {}
+
+    ~Kali() {}
+     void Connect() override
+    {
+        DistribKit::Connect();
+
+        cout << "Connecting to Kali..." << endl;
+    }
+    double GetStableVer() override {return StableVer;}
+
+private:
+
+    double StableVer = 2023.3;
+};
+class Centos : public DistribKit
+{
+public:
+
+    Centos() : DistribKit(Username::CentosUser) {}
+
+    ~Centos() {}
+
+     void Connect() override
+    {
+        DistribKit::Connect();
+
+        cout << "Connecting to Centos..." << endl;
+    }
+    double GetStableVer() override {return StableVer;}
+
+private:
+
+    double StableVer = 12.4;
 };
 // Фабричная функция
-DistribKit* CreateOS(OsType type)
+DistribKit * CreateOS(DistribKit::OsType type)
 {
-    DistribKit* newOS = nullptr; // Инициализируем указатель на абстрактный класс
-    if (type == OsType::Centos)
+    DistribKit* newOS = nullptr;
+
+    if (type == DistribKit::OsType::Centos)
     {
-        newOS = new Centos("RHEL-based",2007, "Server",7.9);
+        newOS = new Centos();
     }
-    else if (type == OsType::Debian)
+    else if (type == DistribKit::OsType::Debian)
     {
-        newOS = new Debian("Debian-based",1993,"Everyday use",12.9);
+        newOS = new Debian();
     }
-    else if (type == OsType::Kali)
+    else if (type == DistribKit::OsType::Kali)
     {
-        newOS = new Kali("Debian-based",2013,"Security audit",2024.4);
+        newOS = new Kali();
     }
-    return newOS; // Возвращаем указатель на созданный объект
+    return newOS;
 }
-// Функция, позволяющая "залогинить" любые ос из любого контейнера
-void LoginEmAll(Iterator<DistribKit*> *it)
+    // Декоратор по username
+
+    class UserDecorator : public IteratorDecorator<DistribKit*>
+    {
+    public:
+        UserDecorator(Iterator<DistribKit*> *it, DistribKit::Username user): IteratorDecorator<DistribKit*>(it), TargetUser(user) {}
+
+        void FirstEl() override
+        {
+            It->FirstEl();
+
+            while (!It->IsDone() && It->GetCurrentElement()->GetUser() != TargetUser)
+            {
+                It->NextEl();
+            }
+        }
+        void NextEl() override
+        {
+            do
+            {
+                It->NextEl();
+            } while(!It->IsDone() && It->GetCurrentElement()->GetUser() != TargetUser);
+        }
+    private:
+
+        DistribKit::Username TargetUser;
+    };
+
+    // Декоратор для активных ОС
+
+    class ActiveOsDecorator : public IteratorDecorator<DistribKit*>
+    {
+    public:
+
+        ActiveOsDecorator(Iterator<DistribKit*>* it,bool status ) : IteratorDecorator<DistribKit*>(it), TargetStatus(status) {}
+
+        void FirstEl() override
+        {
+            It->FirstEl();
+
+            while(!It->IsDone() && It->GetCurrentElement()->GetStatus() != TargetStatus)
+            {
+                It->NextEl();
+            }
+        }
+        void NextEl() override
+        {
+            do {
+                It->NextEl();
+            } while(!It->IsDone() && It->GetCurrentElement()->GetStatus() != TargetStatus);
+        }
+
+     private:
+
+        bool TargetStatus;
+    };
+class StableVerDecorator : public IteratorDecorator<DistribKit*>
 {
-    // Цикл позволяет обойти все элементы контейнера
-    // Устанавливаем итератор на первый элемент, пока итератор не дошел до конца контейнера, переводим его на след.элемент)
+private:
+
+    double TargetStableVer; // Целевая версия, по которой фильтруются элементы
+
+public:
+
+    StableVerDecorator(Iterator<DistribKit*>*it, double ver) : IteratorDecorator<DistribKit*>(it), TargetStableVer(ver) {}
+
+    void FirstEl() override
+    {
+        It->FirstEl();
+        // Пропускаем элементы, пока не дойдем до конца или не найдем подходящий
+        while(!It->IsDone() && It->GetCurrentElement()->GetStableVer() != TargetStableVer)
+        {
+            It->NextEl(); // Переход к следующему элементу
+        };
+    }
+    void NextEl() override
+    {
+        do {
+            It->NextEl(); // Переход к след. элементу
+    // Пропускаем элементы, пока не дойдем до конца или не найдем подходящий
+        } while (!It->IsDone() && It->GetCurrentElement()->GetStableVer() != TargetStableVer);
+    }
+};
+void ConnectEmAll(Iterator<DistribKit*> *it)
+
+{   // Выставляем итератор на 1 место, пока не дойдет до конца, переходим к след.элементу
     for(it->FirstEl(); !it->IsDone(); it->NextEl())
-    {   // Возвращаем текущий элемент контейнера
-        DistribKit *currentOS = it->GetCurrentEl();
-        // Текущим элементом контейнера вызываем функцию Login
-        currentOS->LoginAsRoot();
+    {   // Передаем currentOS текущий элемент
+        DistribKit* currentOS = it->GetCurrentElement();
+        // Подключаем текущий элемент
+        currentOS->Connect();
     }
 }
-int main()
+main()
 {
+    // Случайный seed от времени
+    srand(time(0));
+
     setlocale(LC_ALL,"Russian");
 
-    wcout << L"Какую операционную систему создать (1 - Centos, 2 - Debian, 3 - Kali)?" << endl;
-
-    OsType type = OsType::Undefined; // Инициализация OsType
-
-    int i;
-
-    cin >> i;
-
-    type = static_cast<OsType>(i); // Перевод числа к типу OsType
-
-    // Создание ОС при помощи фабричного метода
-    DistribKit *newOS = CreateOS(type);
-
-    newOS->ChangePassword();
-
-    delete newOS;
-
-    // Использование контейнеров и итераторов для их обхода
     size_t N = 0;
 
-    wcout << L"Введите количество OS: " << endl;
+    wcout << L"Введите количество OS:" << endl;
 
     cin >> N;
 
     StackClass<DistribKit*> OsStack;
-    // Цикл для заполнения стека
+    // Заполняем стек
     for(size_t i=0;i<N;i++)
-    {   // Рандомное число от 1 до 3
-        int os_num = rand()%3+1;
-        // Перевод числа к типу OsType
-        OsType os_type = static_cast<OsType>(os_num);
-        // Создание ОС при помощи фабричного метода
+    {
+        int os_num = rand()%3+1; // Рандомное число от 1 до 3
+        // Явно приводим рандомное число к типу OsType
+        DistribKit::OsType os_type = static_cast<DistribKit::OsType>(os_num);
+        // Вызываем фабричную функцию для этого числа
         DistribKit *newOS = CreateOS(os_type);
-        // Добавляем ОС в стек
+        // Добавляем ОС в стэк
         OsStack.Push(newOS);
     }
-    wcout << L"Размер стека OS: " << OsStack.StackSize() << endl;
-
-    Iterator<DistribKit*> *it2 = new IteratorForStack<DistribKit*>(&OsStack);
-    LoginEmAll(it2);
-    // Очищаем память
-    delete it2;
-
-    cout << endl;
+    wcout << L"Размер стека OS:" << OsStack.GetSize() << endl;
     cout << endl;
 
-     VectorClass<DistribKit*> OsVector;
-     // Цикл для заполнения стека
+    wcout << L"Подключиться только от лица DebianUser" << endl;
+    // Создает декорированный итератор, который фильтрует только пользователей DebianUser
+    Iterator<DistribKit*> *debIt = new UserDecorator(OsStack.GetIterator(),DistribKit::Username::DebianUser);
+    // Вызывает функцию подключения для отфилтрованных пользователей
+    ConnectEmAll(debIt);
+
+    delete debIt;
+
+    cout << endl;
+
+    wcout << L"Подключиться только к активным ОС" << endl;
+
+    Iterator<DistribKit*>* activIt = new ActiveOsDecorator(OsStack.GetIterator(),true);
+
+    ConnectEmAll(activIt);
+
+    delete activIt;
+
+    cout<<endl;
+
+    wcout << L"Подключиться только к ОС со стабильной версией 12.4" << endl;
+
+    Iterator<DistribKit*>* stabIt = new StableVerDecorator(OsStack.GetIterator(),12.4);
+
+    ConnectEmAll(stabIt);
+
+    delete stabIt;
+
+    // Связанный список ОС для адаптера
+    VectorClass<DistribKit*> OsVector;
+
     for(size_t i=0;i<N;i++)
-    { // Рандомное число от 1 до 3
+    {
         int os_num = rand()%3+1;
-        // Перевод числа к типу OsType
-        OsType os_type = static_cast<OsType>(os_num);
-        // Создание ОС при помощи фабричного метода
-        DistribKit *newOS = CreateOS(os_type);
-        // Добавляем ОС в вектор
-        OsVector.PushBack(newOS);
+
+        DistribKit::OsType os_type = static_cast<DistribKit::OsType>(os_num);
+
+        DistribKit* newOS = CreateOS(os_type);
+
+        OsVector.Push(newOS);
     }
-    wcout << L"Размер вектора OS: " << OsVector.VectorSize() << endl;
 
-    Iterator<DistribKit*> *it3 = new IteratorForVector<DistribKit*>(&OsVector);
+    // Демонстрация работы адаптера
 
-    LoginEmAll(it3);
+    wcout << endl << L"Подключение ко всем активным ОС от лица DebianUser" << endl;
 
-    delete it3;
+    // Сохраняем в указателе адптированный итератор, возвращающий указатели на абстрактный класс
+    Iterator<DistribKit*> *adaptedIt = new ConstIterAdapter<VectorClass<DistribKit*>, DistribKit*>(&OsVector);
 
-   /*  // Пример полиморфизма
-    DistribKit* Debian12 = new Debian("Debian-based",1993,"Everyday use",12.9);
-    cout << "Family: " << Debian12->GetFamily() << endl;
-    cout << "Year of issue: " << Debian12->GetYear() << endl;
-    cout << "Typically used for: " << Debian12->GetAppoinment()<< endl;
-    cout << "The most stable version: " << Debian12->GetStableVer()<<endl;
-    Debian12->ChangePassword();
-    Debian12->OpeningBash();
-    Debian12->LoginAsRoot();
-    delete Debian12;
+    Iterator<DistribKit*> *adaptedDebIt = new ActiveOsDecorator(new UserDecorator(adaptedIt, DistribKit::Username::DebianUser),true);
 
-    cout << " " << endl;
+    ConnectEmAll(adaptedDebIt);
 
-    DistribKit* Centos7 = new Centos("RHEL-based",2007, "Server",7.9);
-    cout << "Family: " << Centos7->GetFamily() << endl;
-    cout << "Year of issue: " << Centos7->GetYear() << endl;
-    cout << "Typically used for: " << Centos7->GetAppoinment()<< endl;
-    cout << "The most stable version: " << Centos7->GetStableVer()<<endl;
-    Centos7->ChangePassword();
-    Centos7->OpeningBash();
-    Centos7->LoginAsRoot();
-    delete Centos7;
+    delete adaptedDebIt;
 
-
-    cout << " " << endl;
-
-    DistribKit* KaliLinux = new Kali("Debian-based",2013,"Security audit",2024.4);
-    cout << "Family: " << KaliLinux->GetFamily() << endl;
-    cout << "Year of issue: " << KaliLinux->GetYear() << endl;
-    cout << "Typically used for: " << KaliLinux->GetAppoinment()<< endl;
-    cout << "The most stable version: " << KaliLinux->GetStableVer()<<endl;
-    KaliLinux->ChangePassword();
-    KaliLinux->OpeningBash();
-    KaliLinux->LoginAsRoot();
-    delete KaliLinux;
-
-*/
 }
+
+
+
+
+
+

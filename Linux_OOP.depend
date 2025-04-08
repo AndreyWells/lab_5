@@ -1,7 +1,9 @@
 # depslib dependency file v1.0
-1742660077 source:c:\users\79088\documents\code_blocks\linux_oop\main.cpp
+1744121274 source:c:\users\79088\documents\code_blocks\linux_oop\main.cpp
 	<iostream>
 	"Patterns.h"
+	<cstdlib>
+	<ctime>
 
-1742659993 c:\users\79088\documents\code_blocks\linux_oop\patterns.h
+1744121322 c:\users\79088\documents\code_blocks\linux_oop\patterns.h
 
