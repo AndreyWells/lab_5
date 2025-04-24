@@ -4,11 +4,57 @@
 #include <ctime>
 
 
-//Реализовать создание итератора во всех разработанных ранее контейнерах при помощи функции GetIterator, предварительно объединив все контейнеры общим интерфейсом
-//(т. е. унаследовать их от одного общего класса с виртуальной функцией GetIterator).
-//Реализовать минимум 3 декоратора для итераторов, продемонстрировать их работоспособность.
-//Реализовать адаптер для итератора в стиле STL, продемонстрировать его работоспособность.
+
 using namespace std;
+
+// Абстрактный класс для входа с устройства
+class LoggingStrategy
+{
+public:
+// Инкапсуляция enum class в абстрактный класс, для того, чтобы он работал только в унаследованных классах
+    enum class Device : int
+    {
+        Undefined,
+        Laptop,
+        Smartphone,
+        TV,
+        Tablet
+        };
+    virtual ~LoggingStrategy();
+    virtual void Login() =0;
+};
+
+class LaptopLoggingStrategy : public LoggingStrategy
+{
+public:
+    void Login() override {cout <<"Laptop booting with hard drive..." << endl;}
+
+};
+
+class SmartphoneLoggingStrategy : public LoggingStrategy
+{
+public:
+    void Login() override {cout <<"Smartphone booting with memory disk..." << endl;}
+
+};
+
+class TvLoggingStrategy : public LoggingStrategy
+{
+public:
+    void Login() override {cout <<"TV booting with CD disk..." << endl;}
+
+};
+
+class TabletLoggingStrategy : public LoggingStrategy
+{
+public:
+    void Login() override {cout <<"Tablet booting with memory disk..." << endl;}
+
+};
+
+
+
+
 class DistribKit
 {
     public:
