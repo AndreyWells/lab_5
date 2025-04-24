@@ -196,6 +196,7 @@ DistribKit * CreateOS(DistribKit::OsType type)
 
         bool TargetStatus;
     };
+    // Декоратор стабильной версии
 class StableVerDecorator : public IteratorDecorator<DistribKit*>
 {
 private:
