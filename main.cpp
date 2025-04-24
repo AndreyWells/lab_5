@@ -12,7 +12,7 @@ class LoggingStrategy
 {
 public:
 // Инкапсуляция enum class в абстрактный класс, для того, чтобы он работал только в унаследованных классах
-    enum class Device : int
+    enum class DeviceEnum : int
     {
         Undefined,
         Laptop,
@@ -20,7 +20,7 @@ public:
         TV,
         Tablet
         };
-    virtual ~LoggingStrategy();
+    virtual ~LoggingStrategy() {};
     virtual void Login() =0;
 };
 
@@ -51,8 +51,29 @@ public:
     void Login() override {cout <<"Tablet booting with memory disk..." << endl;}
 
 };
+// Фабричная функция для способа входа
+LoggingStrategy *CreateLoggingStrategy(LoggingStrategy::DeviceEnum device)
+{
+    LoggingStrategy * newDevice = nullptr;
+    if (device == LoggingStrategy::DeviceEnum::Laptop)
+    {
+        newDevice = new LaptopLoggingStrategy();
+    }
+    else if (device == LoggingStrategy::DeviceEnum::Smartphone)
+    {
+        newDevice = new SmartphoneLoggingStrategy();
+    }
+    else if (device == LoggingStrategy::DeviceEnum::TV)
+    {
+        newDevice = new TvLoggingStrategy();
+    }
+    else if (device == LoggingStrategy::DeviceEnum::Tablet)
+    {
+        newDevice == new TabletLoggingStrategy();
+    }
+    return newDevice;
 
-
+}
 
 
 class DistribKit
@@ -76,10 +97,10 @@ class DistribKit
         };
 
          // Конструктом с параметром
-        DistribKit(Username user):StatusIsActive(static_cast<bool>(rand()%2)), StableVer(0.0), User(user) {}
+        DistribKit(Username user):StatusIsActive(static_cast<bool>(rand()%2)), StableVer(0.0), User(user),LoginMethod(nullptr) {}
 
         // Деструктор
-        virtual ~DistribKit() {}
+        virtual ~DistribKit() {if(LoginMethod !=nullptr) delete LoginMethod;}
 
         // Геттеры
         virtual double GetStableVer() {return StableVer;}
@@ -90,6 +111,17 @@ class DistribKit
 
         virtual void Connect()
         {
+            if(LoginMethod == nullptr)
+            {
+                cout << "Any device doesn't work..." << endl;
+                return;
+            }
+            else
+            {
+             LoginMethod->Login();
+            }
+
+
             if (GetStatus())
             {
             cout << "Connecting to ACTIVE os" << endl;
@@ -99,27 +131,32 @@ class DistribKit
             cout <<"Connecting to UNACTIVE os" << endl;
             }
         }
+        void SetLoginMethod(LoggingStrategy *method) {LoginMethod = method;}
         protected:
             bool StatusIsActive;
 
         private:
             double StableVer;
             Username User;
+            LoggingStrategy *LoginMethod;
 
 
 };
 class Debian : public DistribKit
 {
 public:
-    Debian() : DistribKit(Username::DebianUser) {}
+    Debian() : DistribKit(Username::DebianUser)
+    {
+            // Определим метод входа по умолчанию
+    SetLoginMethod(CreateLoggingStrategy(LoggingStrategy::DeviceEnum::Laptop));
+    }
 
     ~Debian() {}
 
      void Connect() override
     {
-        DistribKit::Connect();
-
         cout << "Connecting to Debian..." << endl;
+        DistribKit::Connect();
     }
     double GetStableVer() override {return StableVer;}
 
@@ -132,7 +169,10 @@ class Kali : public DistribKit
 {
 public:
 
-    Kali() : DistribKit(Username::KaliUser) {}
+    Kali() : DistribKit(Username::KaliUser)
+    {
+        SetLoginMethod(CreateLoggingStrategy(LoggingStrategy::DeviceEnum::Smartphone));
+    }
 
     ~Kali() {}
      void Connect() override
