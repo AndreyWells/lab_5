@@ -69,7 +69,7 @@ LoggingStrategy *CreateLoggingStrategy(LoggingStrategy::DeviceEnum device)
     }
     else if (device == LoggingStrategy::DeviceEnum::Tablet)
     {
-        newDevice == new TabletLoggingStrategy();
+        newDevice = new TabletLoggingStrategy();
     }
     return newDevice;
 
@@ -109,11 +109,42 @@ class DistribKit
 
         bool GetStatus() {return StatusIsActive;}
 
-        virtual void Connect()
+        void SetLoginMethod(LoggingStrategy *method) {LoginMethod = method;}
+
+        void Connect()
+        {
+            // Вывод названия ОС
+            PrintType();
+
+            cout <<"| |";
+            // Проверка статуса ОС
+            StatusCheck();
+
+            cout <<"| |";
+            // Место входа в ОС
+            EntryPoint();
+
+            cout <<"| |";
+            // Подключиться с устройства
+            ConnectFromDevice();
+
+            cout << endl;
+
+
+        }
+        protected:
+
+            bool StatusIsActive;
+
+        private:
+            double StableVer;
+            Username User;
+            LoggingStrategy *LoginMethod;
+            void ConnectFromDevice()
         {
             if(LoginMethod == nullptr)
             {
-                cout << "Any device doesn't work..." << endl;
+                cout << "Any device doesn't launched..." << endl;
                 return;
             }
             else
@@ -121,7 +152,10 @@ class DistribKit
              LoginMethod->Login();
             }
 
+        };
 
+        void StatusCheck()
+        {
             if (GetStatus())
             {
             cout << "Connecting to ACTIVE os" << endl;
@@ -130,15 +164,11 @@ class DistribKit
             {
             cout <<"Connecting to UNACTIVE os" << endl;
             }
-        }
-        void SetLoginMethod(LoggingStrategy *method) {LoginMethod = method;}
-        protected:
-            bool StatusIsActive;
+        };
 
-        private:
-            double StableVer;
-            Username User;
-            LoggingStrategy *LoginMethod;
+        virtual void PrintType() = 0;
+
+        virtual void EntryPoint() = 0;
 
 
 };
@@ -153,11 +183,10 @@ public:
 
     ~Debian() {}
 
-     void Connect() override
-    {
-        cout << "Connecting to Debian..." << endl;
-        DistribKit::Connect();
-    }
+    void PrintType() override {cout << "Debian" << endl;}
+
+    void EntryPoint() override {cout << "Connection from home " << endl;}
+
     double GetStableVer() override {return StableVer;}
 
 private:
@@ -171,16 +200,16 @@ public:
 
     Kali() : DistribKit(Username::KaliUser)
     {
+        // Определим метод входа по умолчани
         SetLoginMethod(CreateLoggingStrategy(LoggingStrategy::DeviceEnum::Smartphone));
     }
 
     ~Kali() {}
-     void Connect() override
-    {
-        DistribKit::Connect();
 
-        cout << "Connecting to Kali..." << endl;
-    }
+     void PrintType() override {cout << "Kali" << endl;}
+
+    void EntryPoint() override {cout << "Connection from office " << endl;}
+
     double GetStableVer() override {return StableVer;}
 
 private:
@@ -191,16 +220,18 @@ class Centos : public DistribKit
 {
 public:
 
-    Centos() : DistribKit(Username::CentosUser) {}
+    Centos() : DistribKit(Username::CentosUser)
+     {
+         // Определим метод входа по умолчани
+         SetLoginMethod(CreateLoggingStrategy(LoggingStrategy::DeviceEnum::TV));
+     }
 
     ~Centos() {}
 
-     void Connect() override
-    {
-        DistribKit::Connect();
+     void PrintType() override {cout << "Centos" << endl;}
 
-        cout << "Connecting to Centos..." << endl;
-    }
+    void EntryPoint() override {cout << "Connection from country house " << endl;}
+
     double GetStableVer() override {return StableVer;}
 
 private:
